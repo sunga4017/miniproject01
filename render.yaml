@@ -39,3 +39,5 @@ databases:
     databaseName: miniproject
     user: miniproject_user
     plan: free
+
+# Trigger redeploy
