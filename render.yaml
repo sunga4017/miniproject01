@@ -2,7 +2,7 @@ services:
   # 1. Backend Service (Django)
   - type: web
     name: miniproject-backend
-    runtime: python
+    env: python
     buildCommand: "./backend/build.sh"
     startCommand: "cd backend && gunicorn config.wsgi:application"
     envVars:
@@ -17,11 +17,12 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "*" # 배포 후 프론트엔드 URL로 변경 권장
 
-  # 2. Frontend Service (React)
-  - type: static_site
+  # 2. Frontend Service (React) - 호환성 모드 (Web Type + Static Env)
+  - type: web
     name: miniproject-frontend
+    env: static
     buildCommand: "cd frontend && npm install && npm run build"
-    publishDir: "frontend/build"
+    staticPublishPath: "frontend/build"
     envVars:
       - key: REACT_APP_API_URL
         fromService:
