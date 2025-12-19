@@ -17,7 +17,7 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "*" # 배포 후 프론트엔드 URL로 변경 권장
 
-  # 2. Frontend Service (React) - 호환성 모드 (Web Type + Static Env)
+  # 2. Frontend Service (React)
   - type: web
     name: miniproject-frontend
     env: static
@@ -28,7 +28,7 @@ services:
         fromService:
           name: miniproject-backend
           type: web
-          property: url
+          property: host # url 대신 host 사용
     routes:
       - type: rewrite
         source: "/*"
