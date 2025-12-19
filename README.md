@@ -1,74 +1,63 @@
-# 학생 성적 관리 시스템 백엔드 (miniproject01)
+# 학생 성적 관리 시스템 (Student Score Management System)
 
-## 1. 프로젝트 개요
+Django(Backend)와 React(Frontend)로 구축된 풀스택 학생 성적 관리 프로젝트입니다.
+학생 정보 관리, 엑셀 성적 업로드, 통계 대시보드, PDF 성적표 생성 기능을 제공합니다.
 
-Django와 Django REST Framework(DRF)를 기반으로 구축된 학생 성적 관리 시스템의 백엔드 API 서버입니다. 학생, 과목, 시험, 성적에 대한 CRUD 기능을 제공하며, 엑셀을 통한 일괄 성적 업로드 및 상세 성적 리포팅 기능을 포함합니다.
+## 1. 주요 기능
+*   **대시보드**: 과목별 평균 점수 및 학년별 학생 분포 시각화 (Recharts)
+*   **학생 관리**: 학생 등록, 수정, 삭제 (CRUD)
+*   **성적 관리**: 엑셀 파일을 통한 대량 성적 데이터 업로드
+*   **리포팅**: 학생별 상세 성적표 조회 및 PDF 다운로드
 
 ## 2. 기술 스택
+*   **Backend**: Python 3.9+, Django, Django REST Framework, Pandas, ReportLab
+*   **Frontend**: Node.js, React, Bootstrap 5, Axios
 
-- **Backend:** Python, Django, Django REST Framework
-- **Data Processing:** Pandas, NumPy
-- **Database:** SQLite (기본), Psycopg2 (PostgreSQL 지원)
-- **PDF Generation:** ReportLab (예정)
+## 3. 실행 방법 (How to Run)
 
-## 3. 개발 환경 설정
+이 프로젝트는 로컬 환경에서 실행하도록 구성되어 있습니다.
 
-### 3.1. 요구사항
-- Python 3.10 이상
+### 사전 요구사항
+*   Python 3.8 이상 설치
+*   Node.js 14 이상 설치
+*   Git 설치
 
-### 3.2. 설정 순서
+### 1단계: 프로젝트 클론
+```bash
+git clone https://github.com/sunga4017/miniproject01.git
+cd miniproject01
+```
 
-1.  **프로젝트 클론**
-    ```bash
-    git clone <repository_url>
-    cd miniproject01
-    ```
+### 2단계: 백엔드 실행
+새 터미널을 열고 진행합니다.
+```bash
+# 가상환경 생성 (선택사항)
+python -m venv .venv
+# 윈도우:
+.venv\Scripts\activate
+# 맥/리눅스:
+source .venv/bin/activate
 
-2.  **가상 환경 생성 및 활성화** (Windows PowerShell 기준)
-    ```powershell
-    python -m venv .venv
-    .venv\Scripts\Activate.ps1
-    ```
+# 패키지 설치
+pip install -r backend/requirements.txt
 
-3.  **필수 패키지 설치**
-    `backend` 디렉토리의 `requirements.txt` 파일을 사용하여 설치합니다.
-    ```powershell
-    cd backend
-    pip install -r requirements.txt
-    ```
-
-4.  **데이터베이스 마이그레이션**
-    모델 변경사항을 데이터베이스에 적용합니다.
-    ```powershell
-    python manage.py migrate
-    ```
-
-5.  **관리자 계정 생성**
-    Django 관리자 페이지에 접근하기 위한 계정을 생성합니다.
-    ```powershell
-    python manage.py createsuperuser
-    ```
-
-## 4. 프로젝트 실행 및 사용법
-
-### 4.1. 개발 서버 실행
-`backend` 디렉토리에서 다음 명령어를 실행합니다.
-```powershell
+# DB 마이그레이션 및 실행
+cd backend
+python manage.py migrate
 python manage.py runserver
 ```
-서버는 기본적으로 `http://127.0.0.1:8000/`에서 실행됩니다.
+*서버가 `http://localhost:8000`에서 실행됩니다.*
 
-### 4.2. 테스트용 더미 데이터 생성
-50명의 학생과 성적 데이터를 자동으로 생성하여 API 테스트를 용이하게 할 수 있습니다.
-```powershell
-python manage.py seed_data
+### 3단계: 프론트엔드 실행
+새 터미널을 열고 진행합니다.
+```bash
+cd frontend
+npm install
+npm start
 ```
-**주의:** 이 명령어는 기존 데이터를 삭제하고 새로 생성하므로, 테스트 환경에서만 사용하세요.
+*브라우저가 자동으로 열리며 `http://localhost:3000`으로 접속됩니다.*
 
-### 4.3. 주요 API 엔드포인트
-- **`GET /api/students/`**: 전체 학생 목록 조회
-- **`GET /api/students/{id}/`**: 특정 학생 상세 정보 조회
-- **`GET /api/students/{id}/score_report/`**: 특정 학생의 상세 성적표(과목별 석차, 등급 포함) 조회
-- **`POST /api/upload-scores/`**: 성적 엑셀 파일 일괄 업로드
-
-모든 API 엔드포인트는 DRF 브라우저블 API(`http://127.0.0.1:8000/api/`)를 통해 확인하고 테스트할 수 있습니다.
+## 4. 테스트 방법
+1.  **초기 데이터 생성**: 백엔드 터미널에서 `python manage.py seed_data`를 실행하면 더미 데이터 50명이 생성됩니다.
+2.  **엑셀 업로드**: 프로젝트 루트의 `backend/scores.xlsx` 파일을 '학생 관리 > 엑셀 업로드' 기능을 통해 업로드해보세요.
+3.  **PDF 다운로드**: 학생 목록에서 성적표 버튼을 누르고 PDF 다운로드를 테스트해보세요.
