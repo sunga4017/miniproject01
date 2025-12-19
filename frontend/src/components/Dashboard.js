@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api/axiosConfig';
 import { Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -18,7 +18,7 @@ const Dashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await axios.get('/api/dashboard/stats/');
+            const response = await api.get('/dashboard/stats/');
             setStats(response.data);
             setLoading(false);
         } catch (err) {

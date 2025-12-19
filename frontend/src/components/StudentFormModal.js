@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../api/axiosConfig';
 
 const StudentFormModal = ({ show, onHide, onSuccess, student = null }) => {
     const isEditMode = !!student;
@@ -56,9 +56,9 @@ const StudentFormModal = ({ show, onHide, onSuccess, student = null }) => {
 
         try {
             if (isEditMode) {
-                await axios.put(`/api/students/${student.id}/`, formData);
+                await api.put(`/students/${student.id}/`, formData);
             } else {
-                await axios.post('/api/students/', formData);
+                await api.post('/students/', formData);
             }
             onSuccess();
             onHide();

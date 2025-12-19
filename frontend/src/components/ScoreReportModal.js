@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Table, Spinner, Badge, Button, Alert } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../api/axiosConfig';
 import { FaFilePdf } from 'react-icons/fa';
 
 const ScoreReportModal = ({ show, onHide, studentId }) => {
@@ -20,7 +20,7 @@ const ScoreReportModal = ({ show, onHide, studentId }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`/api/students/${studentId}/score_report/`);
+            const response = await api.get(`/students/${studentId}/score_report/`);
             setData(response.data);
         } catch (err) {
             console.error(err);
@@ -44,7 +44,9 @@ const ScoreReportModal = ({ show, onHide, studentId }) => {
 
     const handleDownloadPdf = () => {
         // PDF 다운로드 링크를 새 탭에서 열기
-        window.open(`/api/students/${studentId}/download_report/`, '_blank');
+        // 배포 환경에서는 REACT_APP_API_URL 사용, 개발 환경에서는 /api 사용
+        const baseURL = process.env.REACT_APP_API_URL || '/api';
+        window.open(`${baseURL}/students/${studentId}/download_report/`, '_blank');
     };
 
     return (

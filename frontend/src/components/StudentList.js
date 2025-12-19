@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axiosConfig'; // axios 대신 api 임포트
 import { Table, Spinner, Alert, Button, Badge, ButtonGroup } from 'react-bootstrap';
 import { FaAddressCard, FaEdit, FaTrash, FaFileUpload, FaUserPlus } from 'react-icons/fa';
 import ScoreReportModal from './ScoreReportModal';
@@ -26,7 +26,7 @@ const StudentList = () => {
     const fetchStudents = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('/api/students/');
+            const response = await api.get('/students/'); // /api 제거
             setStudents(response.data);
             setLoading(false);
         } catch (err) {
@@ -55,7 +55,7 @@ const StudentList = () => {
     const handleDelete = async (id) => {
         if (window.confirm('정말 이 학생 정보를 삭제하시겠습니까?')) {
             try {
-                await axios.delete(`/api/students/${id}/`);
+                await api.delete(`/students/${id}/`); // /api 제거
                 fetchStudents(); // Refresh list
             } catch (err) {
                 alert('삭제 중 오류가 발생했습니다.');

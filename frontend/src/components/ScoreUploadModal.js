@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
-import axios from 'axios';
+import api from '../api/axiosConfig';
 import { FaFileUpload } from 'react-icons/fa';
 
 const ScoreUploadModal = ({ show, onHide, onSuccess }) => {
@@ -30,7 +30,7 @@ const ScoreUploadModal = ({ show, onHide, onSuccess }) => {
         setSuccessMsg(null);
 
         try {
-            await axios.post('/api/upload-scores/', formData, {
+            await api.post('/upload-scores/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
