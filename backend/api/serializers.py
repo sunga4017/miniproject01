@@ -16,6 +16,25 @@ class StudentSerializer(serializers.ModelSerializer):
         # models.py의 필드명과 똑같아야 합니다! (classroom 확인)
         fields = ['id', 'user', 'student_id', 'name', 'birth_date', 'grade', 'classroom', 'number']
 
+    def create(self, validated_data):
+        # 학생 생성 시 User도 자동 생성
+        username = validated_data['student_id']
+        user = User.objects.create_user(
+            username=username,
+            password='password123', # 초기 비밀번호
+            role='STUDENT',
+            email=f"{username}@example.com"
+        )
+        student = Student.objects.create(user=user, **validated_data)
+        return student
+
+    def update(self, instance, validated_data):
+        # 학생 정보 수정 로직 (기본 동작 유지)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 # 2. 과목 데이터 포장지
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ScoreUploadView,
+    ScoreUploadView, DashboardStatsView,
     UserViewSet, StudentViewSet, SubjectViewSet, ExamViewSet, ScoreViewSet
 )
 
@@ -15,4 +15,5 @@ router.register(r'scores', ScoreViewSet)
 urlpatterns = [
     path('', include(router.urls)), # Router URLs
     path('upload-scores/', ScoreUploadView.as_view(), name='upload_scores'),
+    path('dashboard/stats/', DashboardStatsView.as_view(), name='dashboard_stats'),
 ]

@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from django.db import transaction
+from django.db.models import Avg, Count
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 
 from .models import Student, Subject, Exam, Score
-from .utils import read_excel_data
+from .utils import read_excel_data, generate_pdf_report
 from .services import calculate_student_stats # 성적 계산 로직 임포트
 from .serializers import (
     UserSerializer, StudentSerializer, SubjectSerializer,
@@ -14,6 +16,33 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+class DashboardStatsView(APIView):
+    """
+    대시보드용 통계 데이터를 반환합니다.
+    """
+    def get(self, request):
+        # 1. 과목별 평균 점수
+        subject_stats = Score.objects.values('subject__name').annotate(
+            avg_score=Avg('score')
+        ).order_by('subject__name')
+
+        # 2. 학년별 학생 수
+        student_stats = Student.objects.values('grade').annotate(
+            count=Count('id')
+        ).order_by('grade')
+
+        data = {
+            "subject_averages": [
+                {"subject": item['subject__name'], "average": round(item['avg_score'], 1)}
+                for item in subject_stats
+            ],
+            "student_counts": [
+                {"grade": f"{item['grade']}학년", "count": item['count']}
+                for item in student_stats
+            ]
+        }
+        return Response(data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -46,6 +75,22 @@ class StudentViewSet(viewsets.ModelViewSet):
         }
         
         return Response(response_data)
+
+    @action(detail=True, methods=['get'])
+    def download_report(self, request, pk=None):
+        """
+        학생 성적표를 PDF로 생성하여 다운로드합니다.
+        """
+        student = self.get_object()
+        stats = calculate_student_stats(student.pk)
+        
+        pdf_buffer = generate_pdf_report(self.get_serializer(student).data, stats)
+        
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        filename = f"score_report_{student.student_id}.pdf"
+        # 한글 파일명 처리는 브라우저 호환성 문제로 일단 영문/숫자 조합 권장
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
 
 
 class ScoreViewSet(viewsets.ModelViewSet):

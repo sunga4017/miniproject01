@@ -1,42 +1,106 @@
 import pandas as pd
 from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import os
+
+# 한글 폰트 등록 시도 (Windows 기준)
+FONT_NAME = 'Helvetica' # 기본값
+korean_font_path = 'C:/Windows/Fonts/malgun.ttf'
+if os.path.exists(korean_font_path):
+    try:
+        pdfmetrics.registerFont(TTFont('Malgun', korean_font_path))
+        FONT_NAME = 'Malgun'
+    except Exception as e:
+        print(f"Font registration warning: {e}")
 
 def read_excel_data(file_obj) -> pd.DataFrame:
     """
     엑셀 파일 객체에서 데이터를 읽어 Pandas DataFrame으로 반환합니다.
-    엑셀 파일은 첫 번째 시트에 데이터가 있고, 첫 번째 행이 헤더임을 가정합니다.
     """
     try:
-        # BytesIO로 감싸서 Pandas가 파일 객체로 처리할 수 있도록 합니다.
-        # file_obj는 일반적으로 request.FILES['file']과 같은 업로드된 파일 객체입니다.
         df = pd.read_excel(BytesIO(file_obj.read()))
         return df
     except Exception as e:
         print(f"Error reading excel file: {e}")
-        # 실제 환경에서는 더 구체적인 오류 처리 또는 예외 발생
         raise ValueError(f"Failed to read Excel file: {e}")
 
-# 예시 사용법 (테스트용, 실제 파일 업로드 대체)
-if __name__ == '__main__':
-    # 이 부분은 실제 파일 객체를 시뮬레이션합니다.
-    # 테스트를 위해 가상의 엑셀 파일을 만들 수 있습니다.
-    # 예를 들어, pandas로 DataFrame을 만들고 to_excel로 BytesIO에 저장하여 테스트합니다.
-    test_data = {
-        'student_id': [1, 2, 3],
-        '국어': [90, 80, 70],
-        '영어': [85, 75, 65],
-    }
-    test_df = pd.DataFrame(test_data)
+def generate_pdf_report(student_info, stats):
+    """
+    학생 성적표 PDF를 생성하여 BytesIO 객체로 반환합니다.
+    """
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    # 한글 폰트 스타일 추가
+    title_style = ParagraphStyle(
+        'Title',
+        parent=styles['Heading1'],
+        fontName=FONT_NAME,
+        fontSize=24,
+        alignment=1, # Center
+        spaceAfter=20
+    )
+    normal_style = ParagraphStyle(
+        'NormalKorean',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=12,
+        spaceAfter=6
+    )
 
-    # 가상 엑셀 파일 생성
-    excel_buffer = BytesIO()
-    test_df.to_excel(excel_buffer, index=False)
-    excel_buffer.seek(0) # 파일 포인터를 처음으로 이동
+    # 1. 제목
+    elements.append(Paragraph(f"{student_info['name']} 학생 성적표", title_style))
+    elements.append(Spacer(1, 20))
 
-    print("--- 엑셀 파일 읽기 테스트 ---")
-    try:
-        read_df = read_excel_data(excel_buffer)
-        print("엑셀에서 읽은 데이터:")
-        print(read_df)
-    except ValueError as e:
-        print(f"오류 발생: {e}")
+    # 2. 학생 정보
+    info_text = f"""
+    <b>학번:</b> {student_info['student_id']}<br/>
+    <b>학년/반/번호:</b> {student_info['grade']}학년 {student_info['classroom']}반 {student_info['number']}번<br/>
+    <b>생년월일:</b> {student_info['birth_date']}
+    """
+    elements.append(Paragraph(info_text, normal_style))
+    elements.append(Spacer(1, 20))
+
+    # 3. 성적 테이블 헤더
+    data = [['시험명', '과목', '점수', '석차', '등급']]
+    
+    # 데이터 채우기
+    if stats:
+        for item in stats:
+            data.append([
+                item['exam_name'],
+                item['subject_name'],
+                str(item['score']),
+                f"{item['rank']} / {item['total_students']}",
+                f"{item['grade']}등급"
+            ])
+    else:
+        data.append(['데이터 없음', '-', '-', '-', '-'])
+
+    # 테이블 스타일
+    t = Table(data, colWidths=[120, 100, 60, 80, 60])
+    t.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), FONT_NAME),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+    
+    elements.append(t)
+    elements.append(Spacer(1, 30))
+    
+    # 푸터
+    elements.append(Paragraph("위 내용은 사실과 다름없음을 확인합니다.", normal_style))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
