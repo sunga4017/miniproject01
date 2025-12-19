@@ -15,12 +15,11 @@ services:
       - key: DEBUG
         value: "False"
 
-  # 2. Frontend Service (React) - 정적 사이트 설정
-  - type: web  # Blueprint에서 정적 사이트도 web으로 분류하되 설정을 맞춤
+  # 2. Frontend Service (React) - 정적 사이트 규격으로 수정
+  - type: static
     name: miniproject-frontend
-    runtime: static  # 여기서 에러가 났을 확률이 높으니 형식을 확인합니다.
-    publishDir: ./frontend/build
     buildCommand: "cd frontend && npm install && npm run build"
+    publishDir: "./frontend/build"
     envVars:
       - key: REACT_APP_API_URL
         fromService:
