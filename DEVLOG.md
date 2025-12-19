@@ -1,7 +1,7 @@
 # 개발 일지 (Development Log)
 
 **프로젝트:** 학생 성적 관리 시스템 (Full-stack)
-**최종 업데이트:** 2025년 12월 19일
+**최종 업데이트:** 2025년 12월 19일 (배포 설정 완료)
 
 ## 개발 진행 상황 TODO 리스트
 
@@ -33,13 +33,17 @@
 - [x] **데이터 시각화**: Recharts를 활용한 통계 차트 구현.
 - [x] **클라이언트 라우팅**: React Router를 사용한 대시보드/학생관리/설정 페이지 전환.
 
+### 6단계: 배포 (Deployment) - ✅ 완료
+- [x] **Render.com 연동**: `render.yaml` (Infrastructure as Code) 작성.
+- [x] **Frontend 배포**: Static Site (Web Type + Static Env)로 설정, API 주소 환경변수 처리.
+- [x] **Backend 배포**: Gunicorn WSGI 서버 설정, WhiteNoise 정적 파일 서빙.
+- [x] **비용 최적화**: 관리형 DB(PostgreSQL) 비용 절감을 위해 내장 SQLite 사용으로 전환.
+
 ## 주요 결정 및 문제 해결 사항
-1.  **Frontend-Backend 연동 (Proxy)**:
-    - **문제**: 개발 단계에서 CORS(Cross-Origin Resource Sharing) 문제 발생 가능성.
-    - **해결**: `package.json`에 `proxy` 설정을 추가하여 `/api/` 요청을 Django 서버로 자동 전달하도록 구성.
-2.  **디자인 시스템 통일**:
-    - **요청**: `UI-마크다운-2025-12-18.md`에 명시된 Ocean Blue 디자인 시스템 준수.
-    - **해결**: CSS 변수를 활용해 컬러 팔레트를 관리하고, Sidebar 레이아웃 및 Pretendard/Inter 폰트를 전역 적용하여 현대적인 UI 구현.
+1.  **Frontend-Backend 연동 (Proxy & Env)**:
+    - **문제**: 로컬(Proxy)과 배포 환경(Domain)의 API 호출 방식 차이.
+    - **해결**: `axiosConfig.js`를 생성하여 `REACT_APP_API_URL` 환경 변수 유무에 따라 자동으로 Base URL을 설정하도록 구현. Render가 제공하는 Host 도메인에 프로토콜(`https://`)과 접미사(`/api`)를 자동 보정하는 로직 추가.
+2.  **배포 비용 절감 (SQLite)**:
+    - **결정**: Render의 PostgreSQL 서비스 유료화 가능성을 고려하여, 학습/제출용 프로젝트에 적합하도록 파일 기반 DB인 SQLite를 그대로 사용하도록 설정 변경. (단, 서버 재시작 시 데이터 초기화됨을 인지)
 3.  **PDF 한글 폰트 처리**:
-    - **문제**: ReportLab의 기본 폰트에서 한글 깨짐 현상.
-    - **해결**: 시스템 폰트(Malgun Gothic) 경로를 탐색하여 자동으로 등록하는 로직을 `utils.py`에 추가하여 해결.
+    - **해결**: ReportLab 사용 시 시스템 폰트(Malgun Gothic)를 동적으로 탐색하여 등록함으로써 한글 깨짐 방지.
